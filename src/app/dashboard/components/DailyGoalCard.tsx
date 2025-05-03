@@ -5,9 +5,19 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
 
+type Goal = {
+  id: string;
+  title: string;
+};
+
+type CheckIn = {
+  note: string;
+  created_at: string;
+};
+
 export default function DailyGoalCard() {
-  const [goal, setGoal] = useState(null);
-  const [checkIns, setCheckIns] = useState([]);
+  const [goal, setGoal] = useState<Goal | null>(null);
+  const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
   const [newEntry, setNewEntry] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +41,7 @@ export default function DailyGoalCard() {
         .limit(1)
         .single();
 
-      if (goalError) {
+      if (goalError || !goalData) {
         toast.error("Failed to fetch goal");
         return;
       }
@@ -40,9 +50,9 @@ export default function DailyGoalCard() {
 
       const { data: entries, error: checkInsError } = await supabase
         .from('check_ins')
-        .select('*')
+        .select('note, created_at')
         .eq('user_id', user.id)
-        .eq('goal_id', goalData?.id)
+        .eq('goal_id', goalData.id)
         .gte('created_at', dayjs().startOf('day').toISOString())
         .order('created_at', { ascending: false });
 
@@ -75,7 +85,7 @@ export default function DailyGoalCard() {
     const { error } = await supabase.from('check_ins').insert({
       goal_id: goal.id,
       user_id: user.id,
-      note: newEntry, // 🔁 renamed from `content`
+      note: newEntry,
     });
 
     if (error) {
