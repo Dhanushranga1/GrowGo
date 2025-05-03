@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌱 GrowGo — Build Habits That Stick
 
-## Getting Started
+[Live Demo → grow-go.vercel.app](https://grow-go-k7jk.vercel.app)
 
-First, run the development server:
+GrowGo is a minimalist, intention-first habit tracking platform designed to help people grow 1% every day — without distractions, social validation loops, or doomscrolling.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Why I Created GrowGo
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Most productivity and habit apps either:
+- Gamify too heavily and lose the essence of *self-driven growth*, or
+- Add unnecessary features that pull users away from what matters — *consistent action*.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+As someone who struggled with maintaining clarity, focus, and accountability in daily goals, I realized I needed a system that was:
+- Simple
+- Reflective
+- Rooted in **psychological habit formation principles**
+- Backed by a **support system** — not a leaderboard
 
-## Learn More
+GrowGo was born out of this need: to create a **distraction-free space** to log your daily progress, reflect briefly, and stay accountable within a small, trusted pod.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 💡 How GrowGo Solves the Problem
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+GrowGo is built around 3 core ideas:
 
-## Deploy on Vercel
+### ✅ Daily Check-Ins
+Instead of long journaling or tracking dozens of metrics, GrowGo encourages **a single, daily input** — "What did you do today?"  
+This tiny reflection builds **self-awareness**, which is key in habit reinforcement (*ref: Atomic Habits by James Clear*).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 🧠 Clarity Through Reflection
+Each check-in is stored and can be reviewed to understand progress over time — helping users maintain a **growth mindset**.  
+This aligns with the **self-determination theory**: people are more motivated when they feel autonomous and purposeful.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 👥 Accountability Pods
+You’re placed in a small pod — a circle of users pursuing their own goals.  
+You don’t compete. You grow together.  
+Seeing others show up builds **consistency through social proof** (*ref: BJ Fogg’s Behavior Model*).
+
+---
+
+## 🔧 Tech Stack
+
+- **Frontend**: Next.js 13+ (App Router), Tailwind CSS, Shadcn UI
+- **Backend**: Supabase (Auth, Database, RPCs, Real-Time)
+- **Auth**: Supabase OAuth & OTP
+- **State**: React Hooks
+- **Deployment**: Vercel → [Live Here](https://grow-go-k7jk.vercel.app)
+
+---
+
+## 🔭 Future Improvements
+
+Planned features based on behavioral psychology:
+
+- 🔁 **Streak Rescue**: Nudges before a streak break (without shame or stress)
+- 📆 **Weekly Themes**: Reduce friction by guiding your focus
+- 🧠 **Mood ↔ Progress Correlation**: Track mindset patterns over time
+- 🎥 **Retro Reflections**: Monthly summaries and growth snapshots
+- 🔒 **Privacy-First Design**: No public feed, no pressure
+
+---
+
+## 💬 Get Involved
+
+- 🛠 [Open an issue](https://github.com/dhanushranga1/growgo/issues)
+- ⭐ [Star the repo](https://github.com/dhanushranga1/growgo)
+- 📩 Reach out at **dhanu20042@gmail.com**
+
+---
+
+## ✨ Final Thought
+
+> *"You do not rise to the level of your goals. You fall to the level of your systems."*  
+> — James Clear
+
+GrowGo is your quiet system for consistent, meaningful growth.  
+No distractions. Just progress.
+
+---
