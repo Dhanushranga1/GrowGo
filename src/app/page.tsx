@@ -86,7 +86,7 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
         <span className="text-2xl mr-3">{icon}</span>
         <h3 className="text-xl font-bold text-green-600">{title}</h3>
       </div>
-      <p className="text-gray-600 leading-relaxed">{description}</p>
+      <p className="text-gray-650 leading-relaxed">{description}</p>
     </div>
   );
 }
