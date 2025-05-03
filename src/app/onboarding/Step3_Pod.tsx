@@ -12,7 +12,11 @@ interface Pod {
   created_by: string;
 }
 
-export default function Step3_Pod({ onFinish }: { onFinish: () => void }) {
+interface Step3PodProps {
+  onFinish: () => void;
+}
+
+export default function Step3_Pod({ onFinish }: Step3PodProps) {
   const [mode, setMode] = useState<'join' | 'create'>('join');
   const [pods, setPods] = useState<Pod[]>([]);
   const [selectedPodId, setSelectedPodId] = useState<string>('');
@@ -31,7 +35,7 @@ export default function Step3_Pod({ onFinish }: { onFinish: () => void }) {
         console.error(error);
         toast.error('Failed to fetch pods.');
       } else {
-        setPods(data as Pod[]); // Explicitly cast to Pod[]
+        setPods(data as Pod[]);
       }
     };
     fetchPods();
@@ -80,7 +84,11 @@ export default function Step3_Pod({ onFinish }: { onFinish: () => void }) {
 
     const { error: updateError } = await supabase
       .from('users')
-      .update({ pod_id: podId, is_onboarded: true, onboarded_at: new Date().toISOString() })
+      .update({
+        pod_id: podId,
+        is_onboarded: true,
+        onboarded_at: new Date().toISOString(),
+      })
       .eq('id', user.id);
 
     if (updateError) {
