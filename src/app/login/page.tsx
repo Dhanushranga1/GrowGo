@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -6,66 +6,57 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Toaster, toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
-// For a real implementation, you would connect this with Supabase
-const mockSignIn = (provider) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({ success: true, provider });
-    }, 1000);
-  });
-};
+type AuthProvider = 'Google' | 'Email';
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const handleAuth = async (provider: 'Google' | 'Email') => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const handleAuth = async (provider: AuthProvider) => {
     setIsLoading(true);
     try {
       if (provider === 'Google') {
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: `${window.location.origin}/dashboard`, // or your actual route
+            redirectTo: `${window.location.origin}/dashboard`,
           },
         });
         if (error) throw error;
       } else if (provider === 'Email') {
-        // Optional: collect email from input
         const email = prompt("Enter your email to receive a login link:");
         if (!email) throw new Error("Email is required");
-  
+
         const { error } = await supabase.auth.signInWithOtp({ email });
         if (error) throw error;
-  
+
         toast.success("Check your email!", {
           description: "A login link has been sent.",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error("Authentication failed", {
-        description: error.message || 'Please try again later.',
+        description: message,
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
 
   return (
     <div className="flex h-screen w-full">
-      {/* Left Panel - Branding Zone (60%) */}
+      {/* Left Panel */}
       <div className="hidden md:flex w-3/5 bg-green-800 px-16 py-24 flex-col justify-center h-screen">
         <div className="text-white">
           <h1 className="text-4xl font-bold">GrowGo</h1>
-          
           <h2 className="text-3xl font-semibold mt-10">🌱 Grow 1% every day.</h2>
-          
           <p className="text-lg text-white/80 mt-4 max-w-md">
             A place to commit to what matters — no scrolls, no noise.
           </p>
         </div>
       </div>
-      
-      {/* Right Panel - Login Card (40%) */}
+
+      {/* Right Panel */}
       <div className="w-full md:w-2/5 bg-white flex items-center justify-center p-6">
         <Card className="w-full max-w-md rounded-2xl shadow-md p-10 space-y-6">
           <CardHeader className="space-y-1 px-0 pt-0">
@@ -101,7 +92,6 @@ export default function LoginPage() {
         </Card>
       </div>
 
-      {/* Toast notifications */}
       <Toaster position="top-right" richColors />
     </div>
   );

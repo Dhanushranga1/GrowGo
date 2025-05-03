@@ -1,4 +1,5 @@
 'use client';
+
 import { useState } from 'react';
 import Step1_Goal from '@/app/onboarding/Step1_Goal';
 import Step2_Profile from '@/app/onboarding/Step2_Profile';
@@ -6,7 +7,7 @@ import Step3_Pod from '@/app/onboarding/Step3_Pod';
 import { useRouter } from 'next/navigation';
 
 export default function OnboardingPage() {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState<number>(1); // ✅ type number explicitly
   const router = useRouter();
 
   return (

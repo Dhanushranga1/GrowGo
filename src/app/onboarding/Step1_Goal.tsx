@@ -27,8 +27,13 @@ export default function Step1_Goal({ onNext }: { onNext: () => void }) {
     }
 
     setLoading(true);
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user?.id) {
+      toast.error('Failed to retrieve user information.');
+      setLoading(false);
+      return;
+    }
+    const userId = userData.user.id;
 
     const { error } = await supabase.from('goals').insert({
       user_id: userId,

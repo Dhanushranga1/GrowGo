@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import dayjs from "dayjs";
@@ -8,22 +7,25 @@ import { Badge } from "@/components/ui/badge";
 
 dayjs.extend(relativeTime);
 
-type LatestCheckIn = {
+type CheckIn = {
   note: string;
   created_at: string;
 };
 
 type PodMember = {
   user_id: string;
-  username: string | null;
+  username: string;
   email: string;
   streak: number;
-  avatar_url?: string | null;
-  latest_check_in?: LatestCheckIn;
+  avatar_url?: string;
+};
+
+type PodMemberWithCheckIn = PodMember & {
+  latest_check_in?: CheckIn;
 };
 
 export default function PodFeed() {
-  const [podMembers, setPodMembers] = useState<PodMember[]>([]);
+  const [podMembers, setPodMembers] = useState<PodMemberWithCheckIn[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -31,13 +33,12 @@ export default function PodFeed() {
       try {
         const {
           data: { user: currentUser },
-          error: authError,
         } = await supabase.auth.getUser();
 
-        if (authError || !currentUser) return;
+        if (!currentUser) return;
 
         const { data: currentProfile, error: profileError } = await supabase
-          .from("users")
+          .from<{ pod_id: string }>("users")
           .select("pod_id")
           .eq("id", currentUser.id)
           .single();
@@ -47,17 +48,20 @@ export default function PodFeed() {
           return;
         }
 
-        const { data: members, error: membersError } = await supabase
-          .from("pod_members")
-          .select("user_id, username, email, streak, avatar_url")
+        const { data: members, error: memberError } = await supabase
+          .from<PodMember>("pod_members")
+          .select("*")
           .eq("pod_id", currentProfile.pod_id);
 
-        if (membersError || !members) return;
+        if (memberError || !members) {
+          setLoading(false);
+          return;
+        }
 
-        const membersWithCheckIns: PodMember[] = await Promise.all(
+        const membersWithCheckIns: PodMemberWithCheckIn[] = await Promise.all(
           members.map(async (member) => {
             const { data: latestCheckIn } = await supabase
-              .from("check_ins")
+              .from<CheckIn>("check_ins")
               .select("note, created_at")
               .eq("user_id", member.user_id)
               .order("created_at", { ascending: false })
@@ -66,7 +70,7 @@ export default function PodFeed() {
 
             return {
               ...member,
-              latest_check_in: latestCheckIn || undefined,
+              latest_check_in: latestCheckIn ?? undefined,
             };
           })
         );
@@ -125,11 +129,11 @@ export default function PodFeed() {
                 {member.avatar_url ? (
                   <img
                     src={member.avatar_url}
-                    alt={member.username ?? member.email}
+                    alt={member.username}
                     className="h-10 w-10 rounded-full object-cover"
                   />
                 ) : (
-                  member.username?.charAt(0).toUpperCase() ?? "?"
+                  member.username?.charAt(0).toUpperCase() || "?"
                 )}
               </div>
 

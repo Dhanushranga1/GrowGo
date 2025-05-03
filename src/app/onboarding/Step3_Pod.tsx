@@ -4,13 +4,21 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
+interface Pod {
+  id: string;
+  name: string;
+  tagline: string;
+  is_private: boolean;
+  created_by: string;
+}
+
 export default function Step3_Pod({ onFinish }: { onFinish: () => void }) {
   const [mode, setMode] = useState<'join' | 'create'>('join');
-  const [pods, setPods] = useState<any[]>([]);
-  const [selectedPodId, setSelectedPodId] = useState('');
-  const [newPodName, setNewPodName] = useState('');
-  const [newPodTagline, setNewPodTagline] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [pods, setPods] = useState<Pod[]>([]);
+  const [selectedPodId, setSelectedPodId] = useState<string>('');
+  const [newPodName, setNewPodName] = useState<string>('');
+  const [newPodTagline, setNewPodTagline] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchPods = async () => {
@@ -23,7 +31,7 @@ export default function Step3_Pod({ onFinish }: { onFinish: () => void }) {
         console.error(error);
         toast.error('Failed to fetch pods.');
       } else {
-        setPods(data);
+        setPods(data as Pod[]); // Explicitly cast to Pod[]
       }
     };
     fetchPods();
@@ -34,6 +42,12 @@ export default function Step3_Pod({ onFinish }: { onFinish: () => void }) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
+    if (!user) {
+      toast.error('User not found.');
+      setLoading(false);
+      return;
+    }
 
     let podId = selectedPodId;
 

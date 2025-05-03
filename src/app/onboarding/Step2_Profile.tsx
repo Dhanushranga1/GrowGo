@@ -22,6 +22,12 @@ export default function Step2_Profile({ onNext }: { onNext: () => void }) {
       data: { user },
     } = await supabase.auth.getUser();
 
+    if (!user) {
+      toast.error('User not found. Please log in again.');
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase
       .from('users')
       .update({ username, avatar_emoji: emoji })
