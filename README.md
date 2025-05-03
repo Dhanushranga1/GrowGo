@@ -73,8 +73,7 @@ Planned features based on behavioral psychology:
 
 ## ✨ Final Thought
 
-> *"You do not rise to the level of your goals. You fall to the level of your systems."*  
-> — James Clear
+> *"You don't need a massive plan to change your life. Just show up today — and again tomorrow. Growth begins with showing up."*
 
 GrowGo is your quiet system for consistent, meaningful growth.  
 No distractions. Just progress.
