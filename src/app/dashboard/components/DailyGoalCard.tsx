@@ -18,8 +18,8 @@ type CheckIn = {
 export default function DailyGoalCard() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
-  const [newEntry, setNewEntry] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [newEntry, setNewEntry] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchGoalAndCheckIns = async () => {
@@ -35,7 +35,7 @@ export default function DailyGoalCard() {
 
       const { data: goalData, error: goalError } = await supabase
         .from('goals')
-        .select('*')
+        .select('id, title')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -61,7 +61,7 @@ export default function DailyGoalCard() {
         return;
       }
 
-      setCheckIns(entries || []);
+      setCheckIns(entries ?? []);
     };
 
     fetchGoalAndCheckIns();
@@ -122,15 +122,21 @@ export default function DailyGoalCard() {
 
       <div className="pt-4 border-t">
         <h3 className="font-medium text-gray-700 mb-2">Today’s Check-Ins</h3>
-        {checkIns.length === 0 && <p className="text-sm text-gray-400">No entries yet today.</p>}
-        <ul className="space-y-2">
-          {checkIns.map((entry, idx) => (
-            <li key={idx} className="text-sm text-gray-600">
-              <span className="text-gray-400 mr-2">•</span>
-              {entry.note} <span className="text-gray-400 text-xs ml-2">({dayjs(entry.created_at).format('h:mm A')})</span>
-            </li>
-          ))}
-        </ul>
+        {checkIns.length === 0 ? (
+          <p className="text-sm text-gray-400">No entries yet today.</p>
+        ) : (
+          <ul className="space-y-2">
+            {checkIns.map((entry, idx) => (
+              <li key={idx} className="text-sm text-gray-600">
+                <span className="text-gray-400 mr-2">•</span>
+                {entry.note}{' '}
+                <span className="text-gray-400 text-xs ml-2">
+                  ({dayjs(entry.created_at).format('h:mm A')})
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
