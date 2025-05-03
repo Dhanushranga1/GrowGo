@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import dayjs from "dayjs";
@@ -38,20 +39,22 @@ export default function PodFeed() {
         if (!currentUser) return;
 
         const { data: currentProfile, error: profileError } = await supabase
-          .from<{ pod_id: string }>("users")
+          .from("users")
           .select("pod_id")
           .eq("id", currentUser.id)
           .single();
 
-        if (profileError || !currentProfile?.pod_id) {
+        const podId = (currentProfile as { pod_id: string })?.pod_id;
+
+        if (profileError || !podId) {
           setLoading(false);
           return;
         }
 
         const { data: members, error: memberError } = await supabase
-          .from<PodMember>("pod_members")
+          .from("pod_members")
           .select("*")
-          .eq("pod_id", currentProfile.pod_id);
+          .eq("pod_id", podId);
 
         if (memberError || !members) {
           setLoading(false);
@@ -61,7 +64,7 @@ export default function PodFeed() {
         const membersWithCheckIns: PodMemberWithCheckIn[] = await Promise.all(
           members.map(async (member) => {
             const { data: latestCheckIn } = await supabase
-              .from<CheckIn>("check_ins")
+              .from("check_ins")
               .select("note, created_at")
               .eq("user_id", member.user_id)
               .order("created_at", { ascending: false })
