@@ -1,29 +1,42 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Toaster, toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Toaster, toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
-type AuthProvider = 'Google' | 'Email';
+type AuthProvider = "Google" | "Email";
 
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true); // New state
+  const [checkingSession, setCheckingSession] = useState(true);
 
-  // ✅ Use a robust way to detect session after redirect
   useEffect(() => {
     const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        // Get the URL hash (for code exchange)
+        const url = new URL(window.location.href);
+        const authCode = url.searchParams.get('code');
+        
+        // Only attempt code exchange if there's a code parameter
+        if (authCode) {
+          await supabase.auth.exchangeCodeForSession(authCode);
+        }
 
-      if (session?.user) {
-        router.replace("/dashboard");
-      } else {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session?.user) {
+          router.replace("/dashboard");
+        } else {
+          setCheckingSession(false);
+        }
+      } catch (error) {
+        console.error("Session check error:", error);
         setCheckingSession(false);
       }
     };
@@ -32,8 +45,8 @@ export default function LoginPage() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
         router.replace("/dashboard");
       }
     });
@@ -44,16 +57,16 @@ export default function LoginPage() {
   const handleAuth = async (provider: AuthProvider) => {
     setIsLoading(true);
     try {
-      if (provider === 'Google') {
+      if (provider === "Google") {
         const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
+          provider: "google",
           options: {
-            redirectTo: `${window.location.origin}/login`, // comes back here
+            redirectTo: `${window.location.origin}/login`,
           },
         });
         if (error) throw error;
       } else {
-        const email = prompt("📧 Enter your email to get a magic link:");
+        const email = prompt("📧 Enter your email to receive a magic link:");
         if (!email) {
           setIsLoading(false);
           return;
@@ -61,13 +74,12 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signInWithOtp({ email });
         if (error) throw error;
         toast.success("Check your inbox ✉️", {
-          description: "A one-time login link has been sent to you.",
+          description: "A one-time login link has been sent to your email.",
         });
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Something went wrong";
-      toast.error("Oops! Couldn't sign you in", {
-        description: message,
+      toast.error("Authentication failed", {
+        description: (error as Error).message || "Unexpected error",
       });
     } finally {
       setIsLoading(false);
