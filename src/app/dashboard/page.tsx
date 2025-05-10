@@ -14,13 +14,22 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
+    let unsubscribed = false;
+
     const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        router.replace("/login");
-      } else {
-        setLoading(false);
-      }
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setTimeout(() => {
+        if (!unsubscribed) {
+          if (!session?.user) {
+            router.replace("/login");
+          } else {
+            setLoading(false);
+          }
+        }
+      }, 400); // Slight delay for session hydration
     };
 
     init();
@@ -33,7 +42,10 @@ export default function DashboardPage() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      unsubscribed = true;
+      subscription.unsubscribe();
+    };
   }, [router]);
 
   if (loading) {
@@ -53,7 +65,6 @@ export default function DashboardPage() {
               <DailyGoalCard />
             </Suspense>
           </div>
-
           <div>
             <Suspense fallback={<SkeletonPod />}>
               <PodFeed />
