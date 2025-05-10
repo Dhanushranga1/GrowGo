@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Toaster, toast } from 'sonner';
@@ -9,7 +10,19 @@ import { supabase } from '@/lib/supabase';
 type AuthProvider = 'Google' | 'Email';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        router.replace('/dashboard');
+      }
+    };
+    checkSession();
+  }, [router]);
 
   const handleAuth = async (provider: AuthProvider) => {
     setIsLoading(true);
@@ -25,10 +38,8 @@ export default function LoginPage() {
       } else if (provider === 'Email') {
         const email = prompt("Enter your email to receive a login link:");
         if (!email) throw new Error("Email is required");
-
         const { error } = await supabase.auth.signInWithOtp({ email });
         if (error) throw error;
-
         toast.success("Check your email!", {
           description: "A login link has been sent.",
         });
@@ -55,34 +66,30 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
-
       {/* Right Panel */}
-      <div className="w-full md:w-2/5 bg-white flex items-center justify-center p-6">
+      <div className="w-full md:w-2/5 bg-white flex flex-col items-center justify-center p-6">
         <Card className="w-full max-w-md rounded-2xl shadow-md p-10 space-y-6">
           <CardHeader className="space-y-1 px-0 pt-0">
             <h2 className="text-2xl font-semibold">Welcome to GrowGo 🌱</h2>
             <p className="text-sm text-gray-500">Sign in to grow with intention.</p>
           </CardHeader>
-
           <CardContent className="space-y-4 px-0 pt-0">
-            <Button 
-              variant="default" 
-              className="w-full bg-blue-600 hover:bg-blue-700"
+            <Button
+              variant="default"
+              className="w-full bg-green-600 hover:bg-green-700"
               onClick={() => handleAuth('Google')}
               disabled={isLoading}
             >
               {isLoading ? 'Loading...' : '🔵 Continue with Google'}
             </Button>
-
-            <Button 
-              variant="outline" 
-              className="w-full" 
+            <Button
+              variant="outline"
+              className="w-full"
               onClick={() => handleAuth('Email')}
               disabled={isLoading}
             >
               {isLoading ? 'Loading...' : '✉️ Continue with Email'}
             </Button>
-
             <p className="text-xs text-center text-gray-500">
               By continuing, you agree to our{' '}
               <a href="#" className="underline hover:text-green-800">terms</a> and{' '}
@@ -90,8 +97,14 @@ export default function LoginPage() {
             </p>
           </CardContent>
         </Card>
+        <Button
+          variant="ghost"
+          className="mt-6 text-green-600 hover:text-green-800 hover:bg-green-50"
+          onClick={() => router.push('/')}
+        >
+          ← Back to Landing Page
+        </Button>
       </div>
-
       <Toaster position="top-right" richColors />
     </div>
   );
