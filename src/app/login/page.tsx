@@ -11,17 +11,34 @@ type AuthProvider = 'Google' | 'Email';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true); // New state
 
-  // Redirect to dashboard if already logged in
+  // ✅ Use a robust way to detect session after redirect
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (session?.user) {
-        router.replace('/dashboard');
+        router.replace("/dashboard");
+      } else {
+        setCheckingSession(false);
       }
     };
+
     checkSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        router.replace("/dashboard");
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [router]);
 
   const handleAuth = async (provider: AuthProvider) => {
@@ -31,11 +48,11 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: `${window.location.origin}/dashboard`,
+            redirectTo: `${window.location.origin}/login`, // comes back here
           },
         });
         if (error) throw error;
-      } else if (provider === 'Email') {
+      } else {
         const email = prompt("📧 Enter your email to get a magic link:");
         if (!email) {
           setIsLoading(false);
@@ -44,11 +61,11 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signInWithOtp({ email });
         if (error) throw error;
         toast.success("Check your inbox ✉️", {
-          description: "A login link has been sent to you.",
+          description: "A one-time login link has been sent to you.",
         });
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Something went wrong';
+      const message = error instanceof Error ? error.message : "Something went wrong";
       toast.error("Oops! Couldn't sign you in", {
         description: message,
       });
@@ -56,6 +73,10 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  if (checkingSession) {
+    return <div className="text-center text-gray-500 py-20">Checking session...</div>;
+  }
 
   return (
     <div className="flex h-screen w-full">
@@ -82,42 +103,33 @@ export default function LoginPage() {
             <Button
               variant="default"
               className="w-full bg-green-600 hover:bg-green-700 font-medium"
-              onClick={() => handleAuth('Google')}
+              onClick={() => handleAuth("Google")}
               disabled={isLoading}
             >
-              {isLoading ? 'Connecting...' : '🔵 Sign in with Google'}
+              {isLoading ? "Connecting..." : "🔵 Sign in with Google"}
             </Button>
 
             <Button
               variant="outline"
               className="w-full font-medium"
-              onClick={() => handleAuth('Email')}
+              onClick={() => handleAuth("Email")}
               disabled={isLoading}
             >
-              {isLoading ? 'Processing...' : '📧 Sign in with Email Link'}
+              {isLoading ? "Processing..." : "📧 Sign in with Email Link"}
             </Button>
-            
+
             <p className="text-xs text-center text-gray-500 italic pt-2">
               "Keep showing up. That's the habit." — GrowGo
             </p>
           </CardContent>
         </Card>
 
-        {/* Back button - desktop version in main content area, mobile version absolute positioned */}
         <Button
           variant="ghost"
-          className="hidden md:flex mt-6 text-green-600 hover:text-green-800 hover:bg-green-50"
-          onClick={() => router.push('/')}
+          className="mt-6 text-green-600 hover:text-green-800 hover:bg-green-50"
+          onClick={() => router.push("/")}
         >
           ← Back to home
-        </Button>
-        
-        <Button
-          variant="ghost"
-          className="absolute top-4 left-4 md:hidden text-green-600 hover:text-green-800 hover:bg-green-50"
-          onClick={() => router.push('/')}
-        >
-          ← Back
         </Button>
       </div>
 
