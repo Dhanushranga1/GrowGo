@@ -22,14 +22,13 @@ export default function DashboardPage() {
       } = await supabase.auth.getSession();
 
       setTimeout(() => {
-        if (!unsubscribed) {
-          if (!session?.user) {
-            router.replace("/login");
-          } else {
-            setLoading(false);
-          }
+        if (unsubscribed) return;
+        if (!session?.user) {
+          router.replace("/login");
+        } else {
+          setLoading(false);
         }
-      }, 400); // Slight delay for session hydration
+      }, 400); // Delay for hydration
     };
 
     init();
@@ -37,8 +36,11 @@ export default function DashboardPage() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
+      if (event === "SIGNED_IN" && session?.user) {
         setLoading(false);
+      }
+      if (event === "SIGNED_OUT") {
+        router.replace("/login");
       }
     });
 
@@ -76,6 +78,7 @@ export default function DashboardPage() {
   );
 }
 
+// --- Skeleton loaders ---
 function SkeletonHeader() {
   return (
     <div className="flex justify-between items-center">
