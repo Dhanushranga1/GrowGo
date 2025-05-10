@@ -1,5 +1,8 @@
 "use client";
-import { Suspense } from "react";
+
+import { useEffect, useState, Suspense } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import DashboardLayout from "./components/DashboardLayout";
 import UserStatsHeader from "./components/UserStatsHeader";
 import DailyGoalCard from "./components/DailyGoalCard";
@@ -7,20 +10,50 @@ import PodFeed from "./components/PodFeed";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        router.replace("/login");
+      } else {
+        setLoading(false);
+      }
+    };
+
+    init();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router]);
+
+  if (loading) {
+    return <div className="p-10 text-center text-gray-600">Loading your dashboard...</div>;
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6 w-full max-w-5xl mx-auto px-4 py-6">
         <Suspense fallback={<SkeletonHeader />}>
           <UserStatsHeader />
         </Suspense>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
             <Suspense fallback={<SkeletonCard />}>
               <DailyGoalCard />
             </Suspense>
           </div>
-          
+
           <div>
             <Suspense fallback={<SkeletonPod />}>
               <PodFeed />
