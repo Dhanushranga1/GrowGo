@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -17,35 +17,27 @@ export default function LoginPage() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        // Get the URL hash (for code exchange)
-        const url = new URL(window.location.href);
-        const authCode = url.searchParams.get('code');
-        
-        // Only attempt code exchange if there's a code parameter
+        // ✅ Correct way for Supabase OAuth handling
+        const authCode = new URLSearchParams(window.location.search).get("code");
         if (authCode) {
           await supabase.auth.exchangeCodeForSession(authCode);
         }
 
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
+        const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           router.replace("/dashboard");
         } else {
           setCheckingSession(false);
         }
       } catch (error) {
-        console.error("Session check error:", error);
+        console.error("Session check failed:", error);
         setCheckingSession(false);
       }
     };
 
     checkSession();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         router.replace("/dashboard");
       }
@@ -77,9 +69,9 @@ export default function LoginPage() {
           description: "A one-time login link has been sent to your email.",
         });
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       toast.error("Authentication failed", {
-        description: (error as Error).message || "Unexpected error",
+        description: error?.message || "Something went wrong",
       });
     } finally {
       setIsLoading(false);
