@@ -17,27 +17,36 @@ export default function LoginPage() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        // ✅ Correct way for Supabase OAuth handling
-        const authCode = new URLSearchParams(window.location.search).get("code");
-        if (authCode) {
-          await supabase.auth.exchangeCodeForSession(authCode);
+        // ✅ Handles both code (PKCE) and hash (implicit flow)
+        const { error: urlError } = await supabase.auth.getSessionFromUrl();
+        if (urlError) {
+          console.error("OAuth redirect handling error:", urlError.message);
         }
 
-        const { data: { session } } = await supabase.auth.getSession();
+        // ✅ Clean up the URL after handling auth
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // ✅ Now check session
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
         if (session?.user) {
           router.replace("/dashboard");
         } else {
           setCheckingSession(false);
         }
-      } catch (error) {
-        console.error("Session check failed:", error);
+      } catch (err) {
+        console.error("Session check failed:", err);
         setCheckingSession(false);
       }
     };
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         router.replace("/dashboard");
       }
